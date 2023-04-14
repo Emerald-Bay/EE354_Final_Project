@@ -12,6 +12,11 @@ module block_controller(
 	
    );
 	wire block_fill;
+	wire whiteZone;
+	wire greenMiddleSquare;
+	reg reset;
+	reg[9:0] greenMiddleSquareY;
+	reg[49:0] greenMiddleSquareSpeed; 
 	
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
 	reg [9:0] xpos, ypos;
@@ -24,7 +29,7 @@ module block_controller(
 	parameter BLACK = 12'b0000_0000_0000;
     	parameter WHITE = 12'b1111_1111_1111;
  	parameter GREEN = 12'b0000_1111_0000;
-    	reg [1:0] boxIndex;
+	
     	reg reset;
     
     	initial begin
