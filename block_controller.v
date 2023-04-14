@@ -2,83 +2,46 @@
 
 module block_controller(
 	input clk, //this clock must be a slow enough clock to view the changing positions of the objects
+	input clock,
 	input bright,
 	input rst,
 	input up, input down, input left, input right,
 	input [9:0] hCount, vCount,
-	input button,
 	output reg [11:0] rgb,
 	output reg [11:0] background
-	
-   );
+	);
 	wire block_fill;
-	wire whiteZone;
-	wire greenMiddleSquare;
-	reg reset;
-	reg[9:0] greenMiddleSquareY;
-	reg[49:0] greenMiddleSquareSpeed; 
+	wire goodblock_fill;
 	
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
 	reg [9:0] xpos, ypos;
 	
-	reg [1:0] boxIndex;
-    	reg reset;
+	wire redZone;
 	
 	parameter RED   = 12'b1111_0000_0000;
-	
 	parameter BLACK = 12'b0000_0000_0000;
-    	parameter WHITE = 12'b1111_1111_1111;
- 	parameter GREEN = 12'b0000_1111_0000;
 	
-    	reg reset;
-    
-    	initial begin
-            boxIndex = 2'd0;
-            reset = 1'b0;
-    	end
-
-    	always @ (*) begin
-            case(boxIndex)
-                2'd0, 2'd1: // Black boxes
-                    rgb = BLACK;
-                2'd2: // Red box
-                    rgb = RED;
-                default:
-                    rgb = BLACK;
-            endcase
-	end
-	
-	always @ (posedge clk) begin
-	    if (boxIndex == 2'd2)
-                boxIndex <= 2'd0;
-	    else
-                boxIndex <= boxIndex + 2'd1;
-	end
-
-        always @ (posedge clk) begin
-            if ((reset == 1'b0) && (button == 1'b1) && (hCount >= 10'd144) && (hCount <= 10'd784) && (vCount >= 10'd400) && (vCount <= 10'd475)) begin
-                reset <= 1'b1;
-            end else if (vCount <= 10'd20) begin
-                reset <= 1'b0;
-	    end
-	end
-	
-	assign whiteZone = ((hCount >= 10'd144) && (hCount <= 10'd784)) && ((vCount >= 10'd400) && (vCount <= 10'd475)) ? 1 : 0;
-	assign greenMiddleSquare = ((hCount >= 10'd340) && (hCount < 10'd380)) && ((vCount >= greenMiddleSquareY) && (vCount <= greenMiddleSquareY + 10'd40)) ? 1 : 0;
-
 	
 	/*when outputting the rgb value in an always block like this, make sure to include the if(~bright) statement, as this ensures the monitor 
 	will output some data to every pixel and not just the images you are trying to display*/
 	always@ (*) begin
-    	if(~bright )	//force black if not inside the display area
-			rgb = 12'b0000_0000_0000;
+    	if(~bright)	//force black if not inside the display area
+			rgb = BLACK;
 		else if (block_fill) 
-			rgb = RED; 
-		else	
-			rgb=background;
+			rgb = RED;
+		else if (goodblock_fill == 1)
+			rgb = BLACK; // black box
+		else if (redZone == 1)
+			rgb = RED; // black box
+		else
+			rgb = background; // background colors
 	end
 		//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
 	assign block_fill=vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
+
+	assign goodblock_fill = (((hCount >= 10'd144) && (hCount <= 10'd416)) && ((vCount >= 10'd300) && (vCount <= 10'd475))) || (((hCount >= 10'd528) && (hCount <= 10'd784)) && ((vCount >= 10'd570) && (vCount <= 10'd650))) ? 1 : 0;
+	assign redZone = ((hCount >= 10'd417) && (hCount <= 10'd527)) && ((vCount >= 10'd300) && (vCount <= 10'd475)) ? 1 : 0;
+
 	
 	always@(posedge clk, posedge rst) 
 	begin
@@ -87,6 +50,7 @@ module block_controller(
 			//rough values for center of screen
 			xpos<=450;
 			ypos<=250;
+			
 		end
 		else if (clk) begin
 		
@@ -132,6 +96,8 @@ module block_controller(
 				background <= 12'b0000_1111_0000;
 			else if(up)
 				background <= 12'b0000_0000_1111;
-	end	
+	end
+
+	
 	
 endmodule
