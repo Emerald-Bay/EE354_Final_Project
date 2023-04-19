@@ -31,8 +31,7 @@ module block_controller(
 	
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
 	reg [9:0] xpos, ypos;
-	
-	
+
 	parameter RED    = 12'b1111_0000_0000; //Lava color
 	parameter BLACK  = 12'b0000_0000_0000; //Platform Color
 	parameter GREEN  = 12'b0000_1111_0000; //Character and Level-Transistion Color
@@ -81,47 +80,55 @@ module block_controller(
 	end
 		
 		
-	always@(posedge clk, posedge rst) 
-	begin
-		if(rst)
-		begin 
-			//rough values for center of screen
-			xpos<=304;
-			ypos<=220;
-		end
-		else if (clk) begin
-			if(right) begin
-				xpos<=xpos+2; //change the amount you increment to make the speed faster 
-				if(xpos==800) //these are rough values to attempt looping around, you can fine-tune them to make it more accurate- refer to the block comment above
-					xpos<=150;
-			end
-			else if(left) begin
-				xpos<=xpos-2;
-				if(xpos==150)
-					xpos<=800;
-			end
-			else if(up) begin
-				ypos<=ypos-2;
-				if(ypos==34)
-					ypos<=514;
-			end
-				
-			else if(downflag==1 && (ypos<254 && xpos>144 && xpos<400) || (ypos<382 && xpos>406 && xpos<698))begin
-				ypos<=ypos+2;
-				if(ypos>=514)
-					ypos<=34;
-			end
-			else if(downflag==1 && (ypos==254 && xpos>144 && xpos<400) || (ypos==382 && xpos>565 && xpos<698))begin
-				ypos<=ypos;
-			end
-			else if(downflag==1 && ypos==382 && xpos>405 && xpos<565)begin
-				xpos<=304;
-				ypos<=220;
-			end
+	 always@(posedge clk, posedge rst) 
+            begin
+				if(rst)
+				begin 
+					xpos<=304;
+					ypos<=220;
+				end
+				else if (clk) begin
+					if (xpos==762 && ypos>=208 && ypos<=263) begin
+						xpos<=304;
+						ypos<=220; //TODO: transition for levels go to level 2
+					end		
+					else if(right && (xpos==556 && ypos>=382 && ypos<263) || (xpos==634 && ypos<=161 && ypos>208)) begin
+						xpos<=xpos;
+					end
+					else if(right))// && (xpos<406 && xpos>=213) || (xpos>=556) && x <=698) begin
+						xpos<=xpos+2; //change the amount you increment to make the speed faster 
+					end
 			
+					else if(left && (xpos==213 && ypos>=254 && ypos<=159) || (xpos==406 && ypos >=382 && ypos<= 254) || (xpos==150)) begin
+						xpos<=xpos;
+					end
+					else if(left) begin
+						xpos<=xpos-2;
+					end
+					
+					if(downflag==0 && (ypos==161 && xpos>=149 && xpos<=634) || (ypos==208 && xpos>634 && xpos<762)) begin
+						ypos<=ypos;
+					end
+					else if(downflag==0) begin
+						ypos<=ypos-2; // test theory that if no stopped and downflag==0, should just go up
+					end
 			
-		end
-	end
+					else if(downflag==1 && (ypos<254 && xpos>144 && xpos<400) || (ypos<382 && xpos>406 && xpos<698))begin
+						ypos<=ypos+2; // go down
+					end
+					else if(downflag==1 && (ypos==254 && xpos>144 && xpos<400) || (ypos==382 && xpos>565 && xpos<698) || (ypos==268 && xpos>=561 && ypos<762))begin
+						ypos<=ypos; // on ground
+					end
+					else if(downflag==1 && ypos>=382 && ypos<414 && xpos>405 && xpos<565)begin
+						ypos<=ypos+1;
+				 	// slow death, only possible because of falling
+					end
+					else if(downflag==1 && ypos==414 && xpos>405 && xpos<565)begin
+						xpos<=304;
+						ypos<=220; // reset because of death, only possible because of falling
+					end
+				end
+			end
 	
 	
 	//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
