@@ -11,22 +11,32 @@ module block_controller(
 	output reg [11:0] background,
 	input [3:0] Sin
 	);
+	
 	wire main_charac;
-	wire downflag;
+	reg downflag;
+	reg[4:0] state;
 	
-	wire stopUpflag;
-	wire stopDownflag;
-	wire stopRightflag;
-	wire stopLeftflag;
+	reg stopUpFlag;
+	reg stopDownFlag;
+	reg stopRightFlag;
+	reg stopLeftFlag;
 	
-	wire blockerup;
-	wire blockerdown;
-	wire blockerright;
-	wire blockerleft;
+	wire blockerUp;
+	wire blockerDown;
+	wire blockerRight;
+	wire blockerLeft;
 	
-	wire deadflag;
+	reg deadFlag;
+	reg Lvl_1_to_2_flag;
 	
 	reg [4:0] stage;
+	
+	localparam
+	INITIAL = 5'b00001,
+	LEVEL1	= 5'b00010,
+	LEVEL2	= 5'b00100,
+	LEVEL3  = 5'b01000,
+	LEVEL4  = 5'b10000;
 	
 	//these two values dictate the center of the block, incrementing and decrementing them leads the block to move in certain directions
 	reg [9:0] xpos, ypos;
@@ -73,23 +83,23 @@ module block_controller(
 	wire safelevel1; //to concatenate all safe level one blocks
 	
 	
-	assign safelevel1up= lvl1Block3 || lvl1Block4;
-	assign safelevel1down= lvl1Block1 || lvl1Block5 || lvl1Block6;
-	assign safelevel1right= lvl1Block5 || lvl1Block4;
-	assign safelevel1left= lvl1Block1 || lvl1Block2;
+	assign safelevel1up = (lvl1Block3 || lvl1Block4) ? 1 : 0;
+	assign safelevel1down = (lvl1Block1 || lvl1Block5 || lvl1Block6) ? 1 : 0;
+	assign safelevel1right = (lvl1Block5 || lvl1Block4) ? 1 : 0;
+	assign safelevel1left = (lvl1Block1 || lvl1Block2) ? 1 : 0;
 	
 	
-	assign blockerup = vCount>=(ypos-7) && vCount<=(ypos-5) && hCount>=(xpos+3) && hCount<=(xpos-3)? 1 : 0;
-	assign blockerdown = vCount>=(ypos+3) && vCount<=(ypos+5) && hCount>=(xpos+3) && hCount<=(xpos-3)? 1 : 0;
-	assign blockerright = vCount>=(ypos+3) && vCount<=(ypos-3) && hCount>=(xpos+7) && hCount<=(xpos+5)? 1 : 0;
-	assign blockerleft = vCount>=(ypos+3) && vCount<=(ypos-3) && hCount>=(xpos-7) && hCount<=(xpos-5)? 1 : 0;
+	assign blockerUp = vCount>=(ypos-7) && vCount<=(ypos-5) && hCount>=(xpos+3) && hCount<=(xpos-3)? 1 : 0;
+	assign blockerDown = vCount>=(ypos+3) && vCount<=(ypos+5) && hCount>=(xpos+3) && hCount<=(xpos-3)? 1 : 0;
+	assign blockerRight = vCount>=(ypos+3) && vCount<=(ypos-3) && hCount>=(xpos+7) && hCount<=(xpos+5)? 1 : 0;
+	assign blockerLeft = vCount>=(ypos+3) && vCount<=(ypos-3) && hCount>=(xpos-7) && hCount<=(xpos-5)? 1 : 0;
 	
 	always@ (*) begin
     	if(~hCount && ~vCount)begin
-    		stopDownflag=0;
-    		stopUpflag=0;
-    		stopRightflag=0;
-    		stopLeftflag=0;
+    		stopDownFlag <= 0;
+    		stopUpFlag <= 0;
+    		stopRightFlag <= 0;
+    		stopLeftFlag <= 0;
     	end
     	
     	if(~bright)	//force black if not inside the display area
@@ -97,43 +107,43 @@ module block_controller(
 		else if (lvl1_To_lvl2 == 1 ) 
 			rgb = GREEN;
 		
-		else if (state == LVL1) begin
+		else if (state == LEVEL1) begin
 			if (safelevel1) begin
-				rgb = BLACK;
-				if (safelevel1down == 1 && blockerdown == 1)
-					stopDownFlag = 1;
+				rgb <= BLACK;
+				if (safelevel1down == 1 && blockerDown == 1)
+					stopDownFlag <= 1;
 					
-				if (safelevel1up == 1 && blockerup == 1)
-					stopUpFlag = 1;
+				if (safelevel1up == 1 && blockerUp == 1)
+					stopUpFlag <= 1;
 					
-				if (safelevel1right == 1 && blockerright == 1)
-					stopRightFlag = 1;
+				if (safelevel1right == 1 && blockerRight == 1)
+					stopRightFlag <= 1;
 				
-				if (safelevel1left == 1 && blockerleft == 1)
-					stopLeftFlag = 1;
+				if (safelevel1left == 1 && blockerLeft == 1)
+					stopLeftFlag <= 1;
 			end		
 			if (lvl1Lava)
-				rgb = RED;
-				if(deaddown==1 && blockerdown ==1)
-					deadflag=1;
+				rgb <= RED;
+				if(main_charac == 1)
+					deadFlag <= 1;
 					
-			if(lvl1_To_lvl2)
-				changelevel=1;		
+			if(lvl1_To_lvl2 && main_charac)
+				Lvl_1_to_2_flag <= 1;		
 		end
 		
 		else if (state == LEVEL2) begin
-			rgb= BLUE;
+			rgb <= BLUE;
 			
 		end
 		else if (state == LEVEL3) begin
-			rgb= YELLOW;
+			rgb <= YELLOW;
 		end
 		else if (state == LEVEL4) begin
-			rgb= RED;
+			rgb <= RED;
 		end
 		
 		if (main_charac)
-			rbg=GREEN;
+			rgb <= GREEN;
 		
 		/*
 		else if (state == LEVEL5) begin end
@@ -173,102 +183,88 @@ module block_controller(
 				state <= LEVEL4;
 		end 
 	end
-
-	localparam
-	INITIAL = 5'b00001,
-	LEVEL1	= 5'b00010,
-	LEVEL2	= 5'b00100,
-	LEVEL3  = 5'b01000,
-	LEVEL4  = 5'b10000;
 	
 	assign main_charac=vCount>=(ypos-5) && vCount<=(ypos+5) && hCount>=(xpos-5) && hCount<=(xpos+5);
 	//the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
 	
-	always @(posedge clk, posedge rst) begin  : Moving_Logic
+	always @(posedge clk) begin  : Moving_Logic
 		if (state != INITIAL) //fix
-			if(right && stoprightflag) begin
+			if(right && stopRightFlag) begin
 				xpos<=xpos;
 			end
 			else if(right) begin
 				xpos<=xpos+2; //change the amount you increment to make the speed faster 
 			end			
-			else if(left && stopLeftflag) begin
+			else if(left && stopLeftFlag) begin
 				xpos<=xpos;
 			end
 			else if(left) begin
 				xpos<=xpos-2;
 			end	
 			
-			if(downflag==0 && stopUpflag) begin
+			if(downflag==0 && stopUpFlag) begin
 				ypos<=ypos;
 			end
 			else if(downflag==0) begin
 				ypos<=ypos-2; // test theory that if no stopped and downflag==0, should just go up
 			end		
-			else if(downflag==1 && stopDownflag)begin
-				ypos<=ypos; // go down
+			else if(downflag==1 && stopDownFlag)begin
+				ypos<=ypos; // on ground
 			end
 			else if(downflag==1)begin
-				ypos<=ypos+2; // on ground
+				ypos<=ypos+2; // go up
 			end
 		
 	end
 	
 	
-	always @(posedge clk, posedge rst) 
-		begin  : The_Game
-    	   if (rst)
-       	    begin
-       		   state <= INITIAL;  
-           	   xpos<=304;
-	       	   ypos<=220;
-			   downflag = 1; 
-       	    end
-       	else
-       	begin
-         (* full_case, parallel_case *)
-         case (state)
-            INITIAL : 
-              begin
-                  if (down)
-                    state <= LEVEL1;
-              end
+	always @(posedge clk, posedge rst) begin : The_Game
+		if (rst)
+		begin
+			state <= INITIAL;  
+			xpos<=304;
+			ypos<=220;
+			downflag = 1; 
+		end
+		else
+		begin
+			(* full_case, parallel_case *)
+			case (state)
+				INITIAL : 
+				begin
+					if (down)
+						state <= LEVEL1;
+				end
 
-            LEVEL1:
-            begin
-				if(rst)
-				begin 
-					xpos<=304;
-					ypos<=220;
-					downflag = 1;
-				end		
-				else if (clk) begin
-					if (level2to3) begin
-                      	state <= LEVEL2;
-						xpos<=304;
-						ypos<=220; //TODO: transition for levels go to level 2
+				LEVEL1 :
+				begin
+					if (clk) begin
+						if (Lvl_1_to_2_flag) begin
+							state <= LEVEL2;
+							xpos<=304;
+							ypos<=220; //TODO: transition for levels go to level 2
+						end
+						else if(deadFlag==1 && ypos>=382 && ypos<=414 && xpos>406 && xpos<570)begin
+							ypos<=ypos+1;
+							// slow death, only possible because of falling
+						end
+						else if(deadFlag== 1 && ypos==414 && xpos>406 && xpos<570)begin
+							xpos<=304;
+							ypos<=220; // reset because of death, only possible because of falling
+						end
 					end
-		            else if(deadflag==1 && ypos>=382 && ypos<=414 && xpos>406 && xpos<570)begin
-					   ypos<=ypos+1;
-				     // slow death, only possible because of falling
-				    end
-				    else if(deadflag== 1 && ypos==414 && xpos>406 && xpos<570)begin
-				    	xpos<=304;
-				    	ypos<=220; // reset because of death, only possible because of falling
-				    end
-				 end
-			
-		  LEVEL2:begin
-		  end
-		
-		  LEVEL3:begin
-		  end
-		
-		  LEVEL4:begin
-		  end
-		
-    end
-    
-    end
+				end
+
+				LEVEL2:begin
+				end
+				
+				LEVEL3:begin
+				end
+				
+				LEVEL4:begin
+				end
+			endcase
+		end
+	end
 		
 endmodule
