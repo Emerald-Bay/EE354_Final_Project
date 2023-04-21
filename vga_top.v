@@ -7,6 +7,10 @@ module vga_top(
 	input BtnR,
 	input BtnL,
 	input BtnD,
+	input Sw3,  
+	input Sw2,  
+	input Sw1, 
+	input Sw0,
 	//VGA signal
 	output hSync, vSync,
 	output [3:0] vgaR, vgaG, vgaB,
@@ -32,6 +36,18 @@ module vga_top(
 	reg [7:0]  	SSD_CATHODES;
 	wire [1:0] 	ssdscan_clk;
 	
+	
+	
+	// 
+	
+	wire [3:0] Sin;
+	assign Sin   =  {Sw3,  Sw2,  Sw1, Sw0};
+	
+	//ee201_debouncer #(.N_dc(25)) ee201_debouncer_1 
+      //  (.CLK(sys_clk), .RESET(Reset), .PB(BtnU), .DPB( ), .SCEN(SCEN), .MCEN( ), .CCEN( ));
+							
+	
+	
 	reg [27:0]	DIV_CLK;
 	always @ (posedge ClkPort, posedge Reset)  
 	begin : CLOCK_DIVIDER
@@ -44,7 +60,7 @@ module vga_top(
 	assign move_clk=DIV_CLK[19]; //slower clock to drive the movement of objects on the vga screen
 	wire [11:0] background;
 	display_controller dc(.clk(ClkPort), .hSync(hSync), .vSync(vSync), .bright(bright), .hCount(hc), .vCount(vc));
-	block_controller sc(.clk(move_clk), .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb));
+	block_controller sc(.clk(move_clk), .Sin(Sin) , .bright(bright), .rst(BtnC), .up(BtnU), .down(BtnD),.left(BtnL),.right(BtnR),.hCount(hc), .vCount(vc), .rgb(rgb), .background(background));
 	
 	
 	
