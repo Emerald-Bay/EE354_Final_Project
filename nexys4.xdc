@@ -16,16 +16,16 @@ set_property PACKAGE_PIN E3 [get_ports ClkPort]
 	create_clock -add -name ClkPort -period 10.00 [get_ports ClkPort]
  
 # Switches
-Bank = 34, Pin name = IO_L21P_T3_DQS_34,					Sch name = Sw0
+#Bank = 34, Pin name = IO_L21P_T3_DQS_34,					Sch name = Sw0
 set_property PACKAGE_PIN U9 [get_ports {Sw0}]					
 	set_property IOSTANDARD LVCMOS33 [get_ports {Sw0}]
-Bank = 34, Pin name = IO_25_34,							Sch name = Sw1
+#Bank = 34, Pin name = IO_25_34,							Sch name = Sw1
 set_property PACKAGE_PIN U8 [get_ports {Sw1}]					
 	set_property IOSTANDARD LVCMOS33 [get_ports {Sw1}]
-Bank = 34, Pin name = IO_L23P_T3_34,						Sch name = Sw2
+#Bank = 34, Pin name = IO_L23P_T3_34,						Sch name = Sw2
 set_property PACKAGE_PIN R7 [get_ports {Sw2}]					
 	set_property IOSTANDARD LVCMOS33 [get_ports {Sw2}]
-Bank = 34, Pin name = IO_L19P_T3_34,						Sch name = Sw3
+#Bank = 34, Pin name = IO_L19P_T3_34,						Sch name = Sw3
 set_property PACKAGE_PIN R6 [get_ports {Sw3}]					
 	set_property IOSTANDARD LVCMOS33 [get_ports {Sw3}]
 #Bank = 34, Pin name = IO_L19N_T3_VREF_34,					Sch name = Sw4
