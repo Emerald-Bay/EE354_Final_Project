@@ -48,9 +48,8 @@ module block_controller(
 	will output some data to every pixel and not just the images you are trying to display*/
 	
 	always@ (*) begin
-    	if(~bright)	//force black if not inside the display area
-			rgb = BLACK;
-			
+    		if(~bright)	//force black if not inside the display area
+			rgb = BLACK;			
 		else if (main_charac ==1 || lvl1_To_lvl2 == 1) 
 			rgb = GREEN;
 			
