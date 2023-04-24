@@ -46,18 +46,18 @@ module block_controller(
 	// the +-5 for the positions give the dimension of the block (i.e. it will be 10x10 pixels)
 	assign main_charac = (vCount>=(yPos-5) && vCount<=(yPos+5) && hCount>=(xPos-5) && hCount<=(xPos+5)) ? 1 : 0;
 	// collision boxes on each side of the character box (2x6 box)
-	assign pos_bottom_left_x = xPos - 4;
-	assign pos_bottom_right_x = xPos + 4;
-	assign pos_bottom_y = yPos + 6;
-	assign pos_top_left_x = xPos - 4;
-	assign pos_top_right_x = xPos + 4;
-	assign pos_top_y = yPos - 6;
-	assign pos_right_x = xPos + 6;
-	assign pos_right_bottom_y = yPos + 4;
-	assign pos_right_top_y = yPos - 4;
-	assign pos_left_x = xPos - 6;
-	assign pos_left_bottom_y = yPos + 4;
-	assign pos_left_top_y = yPos - 4;
+	assign pos_bottom_left_x = xPos - 5;
+	assign pos_bottom_right_x = xPos + 5;
+	assign pos_bottom_y = yPos + 7;
+	assign pos_top_left_x = xPos - 5;
+	assign pos_top_right_x = xPos + 5;
+	assign pos_top_y = yPos - 7;
+	assign pos_right_x = xPos + 7;
+	assign pos_right_bottom_y = yPos + 5;
+	assign pos_right_top_y = yPos - 5;
+	assign pos_left_x = xPos - 7;
+	assign pos_left_bottom_y = yPos + 5;
+	assign pos_left_top_y = yPos - 5;
 
 	// Level 1
 	wire lvl1Block1; //down and left
@@ -667,7 +667,7 @@ module block_controller(
 			if(right)
 				background <= MAGENTA;
 			else if(left)
-				background <= ORANGE;
+				background <= WHITE;
 			else if(down)
 				background <= PURPLE;
 			else if(up)
@@ -699,13 +699,14 @@ module block_controller(
 					gravity <= DOWN;
 				end
 
-				if (~right || ~left) begin
-					if (right && ~lvl1_col_right) begin
-						xPos <= xPos + 2; // go right
-					end
-					else if (left && lvl1_col_left) begin
-						xPos <= xPos - 2; // go left
-					end
+				if (right && left) begin
+					xPos <= xPos;
+				end
+				else if (right && ~lvl1_col_right) begin
+					xPos <= xPos + 2; // go right
+				end
+				else if (left && ~lvl1_col_left) begin
+					xPos <= xPos - 2; // go left
 				end
 
 				if (lvl1Lava_col) begin
