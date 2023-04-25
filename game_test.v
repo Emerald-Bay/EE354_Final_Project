@@ -14,6 +14,8 @@ module block_controller(
 
 	// Other regs and wires needed
 
+	reg checkpointFlag;
+
 	reg gravity;
 
 	parameter DOWN = 0;
@@ -59,7 +61,9 @@ module block_controller(
 	assign pos_left_bottom_y = yPos + 5;
 	assign pos_left_top_y = yPos - 5;
 
+	//
 	// Level 1
+	//
 	wire lvl1Block1; //down and left
 	wire lvl1Block2; //left
 	wire lvl1Block3; //up
@@ -152,8 +156,10 @@ module block_controller(
 	
 	// Transitition Collisions
 	assign lvl1_To_lvl2_col = ((xPos >= 10'd767) && (xPos <= 10'd784)) && ((yPos >= 10'd204) && (yPos <= 10'd267)) ? 1 : 0;
-	
-	//Level Two
+
+	//
+	// Level Two
+	//
     wire lvl2Block1; //down and left
     wire lvl2Block2; //up and left
     wire lvl2Block3; //up and left and right
@@ -171,22 +177,76 @@ module block_controller(
     wire lvl2_To_lvl8;
 
     assign lvl2Block1 = ((hCount >= 10'd144) && (hCount <= 10'd400)) && ((vCount >= 10'd227) && (vCount <= 10'd515));
-    assign lvl2Block2 = ((hCount >= 10'd144) && (hCount <= 10'd400)) && ((vCount >= 10'd35) && (vCount <= 10'd163)) ? 1 : 0;
-    assign lvl2Block3 = ((hCount >= 10'd529) && (hCount <= 10'd656)) && ((vCount >= 10'd35) && (vCount <= 10'd163)) ? 1 : 0;
+    assign lvl2Block2 = ((hCount >= 10'd144) && (hCount <= 10'd336)) && ((vCount >= 10'd35) && (vCount <= 10'd163)) ? 1 : 0;
+    assign lvl2Block3 = ((hCount >= 10'd593) && (hCount <= 10'd656)) && ((vCount >= 10'd35) && (vCount <= 10'd163)) ? 1 : 0;
     assign lvl2Block4 = ((hCount >= 10'd529) && (hCount <= 10'd656)) && ((vCount >= 10'd227) && (vCount <= 10'd515)) ? 1 : 0;
-    assign lvl2Block5 = ((hCount >= 10'd655) && (hCount <= 10'd784)) && ((vCount >= 10'd268) && (vCount <= 10'd427)) ? 1 : 0;
+    assign lvl2Block5 = ((hCount >= 10'd655) && (hCount <= 10'd784)) && ((vCount >= 10'd386) && (vCount <= 10'd515)) ? 1 : 0;
     assign lvl2Block6 = ((hCount >= 10'd719) && (hCount <= 10'd784)) && ((vCount >= 10'd35) && (vCount <= 10'd323)) ? 1 : 0;
 
 	assign safelevel2 = lvl2Block1 || lvl2Block2 || lvl2Block3 || lvl2Block4 || lvl2Block5 || lvl2Block6;
 
-    assign lvl2Lava = ((hCount >= 10'd401) && (hCount <= 10'd528)) && ((vCount >= 10'd35) && (vCount <= 10'd67)) ? 1 : 0;
+    assign lvl2Lava = ((hCount >= 10'd337) && (hCount <= 10'd592)) && ((vCount >= 10'd35) && (vCount <= 10'd67)) ? 1 : 0;
 
     assign lvl2_To_lvl1 = ((hCount >= 10'd144) && (hCount <= 10'd160)) && ((vCount >= 10'd164) && (vCount <= 10'd226)) ? 1 : 0;
     assign lvl2_To_lvl3 = ((hCount >= 10'd401) && (hCount <= 10'd528)) && ((vCount >= 10'd499) && (vCount <= 10'd515)) ? 1 : 0;
     assign lvl2_To_lvl7 = ((hCount >= 10'd767) && (hCount <= 10'd784)) && ((vCount >= 10'd324) && (vCount <= 10'd387)) ? 1 : 0;
     assign lvl2_To_lvl8 = ((hCount >= 10'd657) && (hCount <= 10'd720)) && ((vCount >= 10'd35) && (vCount <= 10'd51)) ? 1 : 0;
 
-    //Level Three
+	// Down Block Collisions
+	assign lvl2Block1_col_down1 = ((pos_bottom_left_x >= 10'd144) && (pos_bottom_left_x <= 10'd400)) && ((pos_bottom_y >= 10'd227) && (pos_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block1_col_down2 = ((pos_bottom_right_x >= 10'd144) && (pos_bottom_right_x <= 10'd400)) && ((pos_bottom_y >= 10'd227) && (pos_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block5_col_down1 = ((pos_bottom_left_x >= 10'd655) && (pos_bottom_left_x <= 10'd784)) && ((pos_bottom_y >= 10'd386) && (pos_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block5_col_down2 = ((pos_bottom_right_x >= 10'd655) && (pos_bottom_right_x <= 10'd784)) && ((pos_bottom_y >= 10'd386) && (pos_bottom_y <= 10'd515)) ? 1 : 0;
+
+	assign lvl2_col_down = lvl2Block1_col_down1 || lvl2Block1_col_down2 || lvl2Block5_col_down1 || lvl2Block5_col_down2;
+   
+	// Left Block Collisions
+	assign lvl2Block1_col_left1 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd400)) && ((pos_left_bottom_y >= 10'd227) && (pos_left_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block1_col_left2 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd400)) && ((pos_left_top_y >= 10'd227) && (pos_left_top_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block2_col_left1 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd336)) && ((pos_left_bottom_y >= 10'd35) && (pos_left_bottom_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block2_col_left2 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd336)) && ((pos_left_top_y >= 10'd35) && (pos_left_top_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block3_col_left1 = ((pos_left_x >= 10'd593) && (pos_left_x <= 10'd656)) && ((pos_left_bottom_y >= 10'd35) && (pos_left_bottom_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block3_col_left2 = ((pos_left_x >= 10'd593) && (pos_left_x <= 10'd656)) && ((pos_left_top_y >= 10'd35) && (pos_left_top_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block4_col_left1 = ((pos_left_x >= 10'd529) && (pos_left_x <= 10'd656)) && ((pos_left_bottom_y >= 10'd227) && (pos_left_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block4_col_left2 = ((pos_left_x >= 10'd529) && (pos_left_x <= 10'd656)) && ((pos_left_top_y >= 10'd227) && (pos_left_top_y <= 10'd515)) ? 1 : 0;
+
+	assign lvl2_col_left = lvl2Block1_col_left1 || lvl2Block1_col_left2 || lvl2Block2_col_left1 || lvl2Block2_col_left2 || lvl2Block3_col_left1 || lvl2Block3_col_left2 || lvl2Block4_col_left1 || lvl2Block4_col_left2;
+
+	// Up Block Collisions
+	assign lvl2Block2_col_up1 = ((pos_top_left_x >= 10'd144) && (pos_top_left_x <= 10'd336)) && ((pos_top_y >= 10'd35) && (pos_top_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block2_col_up2 = ((pos_top_right_x >= 10'd144) && (pos_top_right_x <= 10'd336)) && ((pos_top_y >= 10'd35) && (pos_top_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block3_col_up1 = ((pos_top_left_x >= 10'd593) && (pos_top_left_x <= 10'd656)) && ((pos_top_y >= 10'd35) && (pos_top_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block3_col_up2 = ((pos_top_right_x >= 10'd593) && (pos_top_right_x <= 10'd656)) && ((pos_top_y >= 10'd35) && (pos_top_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block4_col_up1 = ((pos_top_left_x >= 10'd529) && (pos_top_left_x <= 10'd656)) && ((pos_top_y >= 10'd227) && (pos_top_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block4_col_up2 = ((pos_top_right_x >= 10'd529) && (pos_top_right_x <= 10'd656)) && ((pos_top_y >= 10'd227) && (pos_top_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block6_col_up1 = ((pos_top_left_x >= 10'd719) && (pos_top_left_x <= 10'd784)) && ((pos_top_y >= 10'd35) && (pos_top_y <= 10'd323)) ? 1 : 0;
+	assign lvl2Block6_col_up2 = ((pos_top_right_x >= 10'd719) && (pos_top_right_x <= 10'd784)) && ((pos_top_y >= 10'd35) && (pos_top_y <= 10'd323)) ? 1 : 0;
+	
+	assign lvl2_col_up = lvl2Block2_col_up1 || lvl2Block2_col_up2 || lvl2Block3_col_up1 || lvl2Block3_col_up2 || lvl2Block4_col_up1 || lvl2Block4_col_up2 || lvl2Block6_col_up1 || lvl2Block6_col_up2;
+
+	// Right Block Collisions
+	assign lvl2Block3_col_right1 = ((pos_right_x >= 10'd593) && (pos_right_x <= 10'd656)) && ((pos_right_bottom_y >= 10'd35) && (pos_right_bottom_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block3_col_right2 = ((pos_right_x >= 10'd593) && (pos_right_x <= 10'd656)) && ((pos_right_top_y >= 10'd35) && (pos_right_top_y <= 10'd163)) ? 1 : 0;
+	assign lvl2Block4_col_right1 = ((pos_right_x >= 10'd529) && (pos_right_x <= 10'd656)) && ((pos_right_bottom_y >= 10'd227) && (pos_right_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block4_col_right2 = ((pos_right_x >= 10'd529) && (pos_right_x <= 10'd656)) && ((pos_right_top_y >= 10'd227) && (pos_right_top_y <= 10'd515)) ? 1 : 0;
+	assign lvl2Block6_col_right1 = ((pos_right_x >= 10'd719) && (pos_right_x <= 10'd528)) && ((pos_right_bottom_y >= 10'd35) && (pos_right_bottom_y <= 10'd323)) ? 1 : 0;
+	assign lvl2Block6_col_right2 = ((pos_right_x >= 10'd719) && (pos_right_x <= 10'd528)) && ((pos_right_top_y >= 10'd35) && (pos_right_top_y <= 10'd323)) ? 1 : 0;
+	
+	assign lvl2_col_right = lvl2Block3_col_right1 || lvl2Block3_col_right2 || lvl2Block4_col_right1 || lvl2Block4_col_right2 || lvl2Block6_col_right1 || lvl2Block6_col_right2;
+	
+	// Lava Collisions
+	assign lvl2Lava_col = ((xPos >= 10'd337) && (xPos <= 10'd592)) && ((yPos >= 10'd35) && (yPos <= 10'd67)) ? 1 : 0;
+
+	
+	// Transition Collisions
+	assign lvl2_To_lvl1_col = ((xPos >= 10'd144) && (xPos <= 10'd160)) && ((yPos >= 10'd164) && (yPos <= 10'd226)) ? 1 : 0;
+	assign lvl2_To_lvl3_col = ((xPos >= 10'd401) && (xPos <= 10'd528)) && ((yPos >= 10'd499) && (yPos <= 10'd515)) ? 1 : 0;
+	assign lvl2_To_lvl7_col = ((xPos >= 10'd767) && (xPos <= 10'd784)) && ((yPos >= 10'd324) && (yPos <= 10'd387)) ? 1 : 0;
+	assign lvl2_To_lvl8_col = ((xPos >= 10'd657) && (xPos <= 10'd720)) && ((yPos >= 10'd35) && (yPos <= 10'd51)) ? 1 : 0;
+
+	//
+    // Level Three
+	//
     wire lvl3Block1; //left
     wire lvl3Block2; //right
 
@@ -201,13 +261,34 @@ module block_controller(
     assign lvl3Block2 = ((hCount >= 10'd529) && (hCount <= 10'd784)) && ((vCount >= 10'd35) && (vCount <= 10'd515)) ? 1 : 0;
 
 	assign safelevel3 = lvl3Block1 || lvl3Block2;
-
+	
     assign lvl3Lava = ((hCount >= 10'd448) && (hCount <= 10'd480)) && ((vCount >= 10'd355) && (vCount <= 10'd467)) ? 1 : 0;
 
     assign lvl3_To_lvl2 = ((hCount >= 10'd401) && (hCount <= 10'd528)) && ((vCount >= 10'd35) && (vCount <= 10'd51)) ? 1 : 0;
     assign lvl3_To_lvl4 = ((hCount >= 10'd401) && (hCount <= 10'd528)) && ((vCount >= 10'd499) && (vCount <= 10'd515)) ? 1 : 0;
+	
+	// Left Block Collisions
+	assign lvl3Block1_col_left1 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd400)) && ((pos_left_bottom_y >= 10'd35) && (pos_left_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl3Block1_col_left2 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd400)) && ((pos_left_top_y >= 10'd35) && (pos_left_top_y <= 10'd515)) ? 1 : 0;
+	
+	assign lvl3_col_left = lvl3Block1_col_left1 || lvl3Block1_col_left2;
 
-    //Level Four
+	// Right Block Collisions
+	assign lvl3Block2_col_right1 = ((pos_right_x >= 10'd529) && (pos_right_x <= 10'd784)) && ((pos_right_bottom_y >= 10'd35) && (pos_right_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl3Block2_col_right2 = ((pos_right_x >= 10'd529) && (pos_right_x <= 10'd784)) && ((pos_right_top_y >= 10'd35) && (pos_right_top_y <= 10'd515)) ? 1 : 0;
+	
+	assign lvl3_col_right = lvl3Block2_col_right1 || lvl3Block2_col_right2;
+	
+	// Lava Collisions
+	assign lvl3Lava_col = ((xPos >= 10'd448) && (xPos <= 10'd480)) && ((yPos >= 10'd355) && (yPos <= 10'd467)) ? 1 : 0;
+	
+	// Transition Collisions
+	assign lvl3_To_lvl2_col = ((xPos >= 10'd401) && (xPos <= 10'd528)) && ((yPos >= 10'd35) && (yPos <= 10'd51)) ? 1 : 0;
+	assign lvl3_To_lvl4_col = ((xPos >= 10'd401) && (xPos <= 10'd528)) && ((yPos >= 10'd499) && (yPos <= 10'd515)) ? 1 : 0;
+
+	//
+    // Level Four
+	//
     wire lvl4Block1; //up and down and right
     wire lvl4Block2; //up and left
     wire lvl4Block3; //left
@@ -244,9 +325,59 @@ module block_controller(
 	assign lvl4Lava = lvl4Lava1 || lvl4Lava2 || lvl4Lava3 || lvl4Lava4;
 
     assign lvl4_To_lvl3 = ((hCount >= 10'd401) && (hCount <= 10'd528)) && ((vCount >= 10'd35) && (vCount <= 10'd51)) ? 1 : 0;
-    assign lvl4_To_lvl5 = ((hCount >= 10'd401) && (hCount <= 10'd528)) && ((vCount >= 10'd387) && (vCount <= 10'd514)) ? 1 : 0;
+    assign lvl4_To_lvl5 = ((hCount >= 10'd768) && (hCount <= 10'd784)) && ((vCount >= 10'd388) && (vCount <= 10'd450)) ? 1 : 0;
 
+	// Down Block Collisions
+	assign lvl4Block1_col_down1 = ((pos_bottom_left_x >= 10'd272) && (pos_bottom_left_x <= 10'd784)) && ((pos_bottom_y >= 10'd164) && (pos_bottom_y <= 10'd275)) ? 1 : 0;
+	assign lvl4Block1_col_down2 = ((pos_bottom_right_x >= 10'd272) && (pos_bottom_right_x <= 10'd784)) && ((pos_bottom_y >= 10'd164) && (pos_bottom_y <= 10'd275)) ? 1 : 0;
+	assign lvl4Block4_col_down1 = ((pos_bottom_left_x >= 10'd209) && (pos_bottom_left_x <= 10'd784)) && ((pos_bottom_y >= 10'd451) && (pos_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl4Block4_col_down2 = ((pos_bottom_right_x >= 10'd209) && (pos_bottom_right_x <= 10'd784)) && ((pos_bottom_y >= 10'd451) && (pos_bottom_y <= 10'd515)) ? 1 : 0;
+
+	assign lvl4_col_down = lvl4Block1_col_down1 || lvl4Block1_col_down2 || lvl4Block4_col_down1 || lvl4Block4_col_down2;
+
+	// Left Block Collisions
+	assign lvl4Block2_col_left1 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd400)) && ((pos_left_bottom_y >= 10'd35) && (pos_left_bottom_y <= 10'd99)) ? 1 : 0;
+	assign lvl4Block2_col_left2 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd400)) && ((pos_left_top_y >= 10'd35) && (pos_left_top_y <= 10'd99)) ? 1 : 0;
+	assign lvl4Block3_col_left1 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd208)) && ((pos_left_bottom_y >= 10'd100) && (pos_left_bottom_y <= 10'd515)) ? 1 : 0;
+	assign lvl4Block3_col_left2 = ((pos_left_x >= 10'd144) && (pos_left_x <= 10'd208)) && ((pos_left_top_y >= 10'd100) && (pos_left_top_y <= 10'd515)) ? 1 : 0;
+
+	assign lvl4_col_left = lvl4Block2_col_left1 || lvl4Block2_col_left2 || lvl4Block3_col_left1 || lvl4Block3_col_left2;
+
+	// Up Block Collisions
+    assign lvl4Block1_col_up1 = ((pos_top_left_x >= 10'd272) && (pos_top_left_x <= 10'd784)) && ((pos_top_y >= 10'd164) && (pos_top_y <= 10'd275)) ? 1 : 0;
+    assign lvl4Block1_col_up2 = ((pos_top_right_x >= 10'd272) && (pos_top_right_x <= 10'd784)) && ((pos_top_y >= 10'd164) && (pos_top_y <= 10'd275)) ? 1 : 0;
+	assign lvl4Block2_col_up1 = ((pos_top_left_x >= 10'd144) && (pos_top_left_x <= 10'd400)) && ((pos_top_y >= 10'd35) && (pos_top_y <= 10'd99)) ? 1 : 0;
+	assign lvl4Block2_col_up2 = ((pos_top_right_x >= 10'd144) && (pos_top_right_x <= 10'd400)) && ((pos_top_y >= 10'd35) && (pos_top_y <= 10'd99)) ? 1 : 0;
+	assign lvl4Block6_col_up1 = ((pos_top_left_x >= 10'd719) && (pos_top_left_x <= 10'd784)) && ((pos_top_y >= 10'd276) && (pos_top_y <= 10'd387)) ? 1 : 0;
+	assign lvl4Block6_col_up2 = ((pos_top_right_x >= 10'd719) && (pos_top_right_x <= 10'd784)) && ((pos_top_y >= 10'd276) && (pos_top_y <= 10'd387)) ? 1 : 0;
+
+	assign lvl4_col_up = lvl4Block1_col_up1 || lvl4Block1_col_up2 || lvl4Block2_col_up1 || lvl4Block2_col_up2 || lvl4Block6_col_up1 || lvl4Block6_col_up2;
+
+	// Right Block Collisions
+	assign lvl4Block1_col_right1 = ((pos_right_x >= 10'd272) && (pos_right_x <= 10'd784)) && ((pos_right_bottom_y >= 10'd164) && (pos_right_bottom_y <= 10'd275)) ? 1 : 0;
+	assign lvl4Block1_col_right2 = ((pos_right_x >= 10'd272) && (pos_right_x <= 10'd784)) && ((pos_right_top_y >= 10'd164) && (pos_right_top_y <= 10'd275)) ? 1 : 0;
+	assign lvl4Block5_col_right1 = ((pos_right_x >= 10'd529) && (pos_right_x <= 10'd784)) && ((pos_right_bottom_y >= 10'd35) && (pos_right_bottom_y <= 10'd163)) ? 1 : 0;
+	assign lvl4Block5_col_right2 = ((pos_right_x >= 10'd529) && (pos_right_x <= 10'd784)) && ((pos_right_top_y >= 10'd35) && (pos_right_top_y <= 10'd163)) ? 1 : 0;
+	assign lvl4Block6_col_right1 = ((pos_right_x >= 10'd719) && (pos_right_x <= 10'd784)) && ((pos_right_bottom_y >= 10'd276) && (pos_right_bottom_y <= 10'd387)) ? 1 : 0;
+	assign lvl4Block6_col_right2 = ((pos_right_x >= 10'd719) && (pos_right_x <= 10'd784)) && ((pos_right_top_y >= 10'd276) && (pos_right_top_y <= 10'd387)) ? 1 : 0;
+
+	assign lvl4_col_right = lvl4Block1_col_right1 || lvl4Block1_col_right2 || lvl4Block5_col_right1 || lvl4Block5_col_right2 || lvl4Block6_col_right1 || lvl4Block6_col_right2;
+
+	// Lava Collisions
+	assign lvl4Lava1_col = ((xPos >= 10'd288) && (xPos <= 10'd384)) && ((yPos >= 10'd434) && (yPos <= 10'd450)) ? 1 : 0;
+    assign lvl4Lava2_col = ((xPos >= 10'd400) && (xPos <= 10'd496)) && ((yPos >= 10'd276) && (yPos <= 10'd291)) ? 1 : 0;
+    assign lvl4Lava3_col = ((xPos >= 10'd512) && (xPos <= 10'd608)) && ((yPos >= 10'd434) && (yPos <= 10'd450)) ? 1 : 0;
+    assign lvl4Lava4_col = ((xPos >= 10'd624) && (xPos <= 10'd718)) && ((yPos >= 10'd276) && (yPos <= 10'd291)) ? 1 : 0;
+
+	assign lvl4Lava_col = lvl4Lava1_col || lvl4Lava2_col || lvl4Lava3_col || lvl4Lava4_col;
+
+	//Transistions Collisions
+	assign lvl4_To_lvl3_col = ((xPos >= 10'd401) && (xPos <= 10'd528)) && ((yPos >= 10'd35) && (yPos <= 10'd51)) ? 1 : 0;
+    assign lvl4_To_lvl5_col = ((xPos >= 10'd768) && (xPos <= 10'd784)) && ((yPos >= 10'd388) && (yPos <= 10'd450)) ? 1 : 0;
+
+	//
     //Level Five
+	//
     wire lvl5Block1; //up and left
     wire lvl5Block2; //up and left
     wire lvl5Block3; //up and left
@@ -570,17 +701,17 @@ module block_controller(
 				else if (lvl1_To_lvl2 == 1)
 					rgb = GREEN;
 				else
-					rgb = background; // background colors, need to add colors
+					rgb = background;
 			end
 			else if (stage == LVL2) begin
 				if (safelevel2 == 1)
 					rgb = BLUE;
 				else if (lvl2Lava == 1)
 					rgb = RED; // black box
-				else if (lvl2_To_lvl3 || lvl2_To_lvl7 || lvl2_To_lvl8)
+				else if (lvl2_To_lvl3 || lvl2_To_lvl7 || lvl2_To_lvl8 || lvl2_To_lvl1)
 					rgb = GREEN;
 				else
-					rgb = background; // background colors, need to add colors
+					rgb = background;
 			end
 			else if (stage == LVL3) begin
 				if (safelevel3 == 1)
@@ -590,7 +721,7 @@ module block_controller(
 				else if (lvl3_To_lvl2 || lvl3_To_lvl4)
 					rgb = GREEN;
 				else
-					rgb = background; // background colors, need to add colors
+					rgb = background;
 			end
 			else if (stage == LVL4) begin
 				if (safelevel4 == 1)
@@ -600,7 +731,7 @@ module block_controller(
 				else if (lvl4_To_lvl3 || lvl4_To_lvl5)
 					rgb = GREEN;
 				else
-					rgb = background; // background colors, need to add colors
+					rgb = background;
 			end
 			else if (stage == LVL5) begin
 				if (safelevel5 == 1)
@@ -612,7 +743,7 @@ module block_controller(
 				else if (checkpointLoc)
 					rgb = PURPLE;
 				else
-					rgb = background; // background colors, need to add colors
+					rgb = background;
 			end
 			else if (stage == LVL6) begin
 				if (safelevel6 == 1)
@@ -622,7 +753,7 @@ module block_controller(
 				else if (lvl6_To_lvl5 || lvl6_To_lvl7)
 					rgb = GREEN;
 				else
-					rgb = background; // background colors, need to add colors
+					rgb = background;
 			end
 			else if (stage == LVL7) begin
 				if (safelevel7 == 1)
@@ -632,7 +763,7 @@ module block_controller(
 				else if (lvl7_To_lvl6 || lvl7_To_lvl2)
 					rgb = GREEN;
 				else
-					rgb = background; // background colors, need to add colors
+					rgb = background;
 			end
 			else if (stage == LVL8) begin
 				if (safelevel8 == 1)
@@ -644,7 +775,7 @@ module block_controller(
 				else if (victoryZone)
 					rgb = YELLOW;
 				else
-					rgb = background; // background colors, need to add colors
+					rgb = background;
 			end
 			else if (stage == WIN)  begin
 				//need to add object to draw "You Win" on a black screen
@@ -658,21 +789,6 @@ module block_controller(
 				rgb = ORANGE;
 		end
 	end
-	
-	//the background color reflects the most recent button press
-	always@(posedge clk, posedge rst) begin
-		if(rst)
-			background <= BLACK;
-		else 
-			if(right)
-				background <= MAGENTA;
-			else if(left)
-				background <= WHITE;
-			else if(down)
-				background <= PURPLE;
-			else if(up)
-				background <= BLUE;
-	end
 		
 	always@(posedge clk, posedge rst) 
      begin
@@ -682,20 +798,23 @@ module block_controller(
 
 			stage <= LVL1;
 			gravity <= DOWN;
+
+			background <= BLACK;
+			checkpointFlag <= 0;
 		end
 		else if (clk) begin
 			if (stage == LVL1) begin
 				if(gravity == DOWN && ~lvl1_col_down) begin
 					yPos <= yPos + 2; // go down
 				end
-				else if (up) begin
+				else if (gravity == DOWN && up) begin
 					gravity <= UP;
 				end
 
 				if (gravity == UP && ~lvl1_col_up) begin
 					yPos <= yPos - 2; // go up
 				end
-				else if (up) begin
+				else if (gravity == UP && up) begin
 					gravity <= DOWN;
 				end
 
@@ -710,8 +829,14 @@ module block_controller(
 				end
 
 				if (lvl1Lava_col) begin
-					xPos <= 304;
-					yPos <= 220;
+					if (~checkpointFlag) begin // Haven't reached the checkpoint
+						xPos <= 304;
+						yPos <= 220;
+					end
+					else begin // Reached the checkpoint
+						xPos <= 304; // Fix when stage 5 is finished/checkpoint can be reached
+						yPos <= 220;
+					end
 
 					gravity <= DOWN;
 				end
@@ -720,18 +845,200 @@ module block_controller(
 					stage <= LVL2;
 
 					xPos <= 176;
-					yPos <= 211;
+					yPos <= 218;
 					gravity <= DOWN;
 				end
 			end
 			else if (stage == LVL2) begin
+				if(gravity == DOWN && ~lvl2_col_down) begin
+					yPos <= yPos + 2; // go down
+				end
+				else if (gravity == DOWN && up) begin
+					gravity <= UP;
+				end
 
+				if (gravity == UP && ~lvl2_col_up) begin
+					yPos <= yPos - 2; // go up
+				end
+				else if (gravity == UP && up) begin
+					gravity <= DOWN;
+				end
+
+				if (right && left) begin
+					xPos <= xPos;
+				end
+				else if (right && ~lvl2_col_right) begin
+					xPos <= xPos + 2; // go right
+				end
+				else if (left && ~lvl2_col_left) begin
+					xPos <= xPos - 2; // go left
+				end
+
+				if (lvl2Lava_col) begin
+					if (~checkpointFlag) begin // Haven't reached the checkpoint
+						stage <= LVL1;
+
+						xPos <= 304;
+						yPos <= 220;
+					end
+					else begin // Reached the checkpoint
+						stage <= LVL5;
+
+						xPos <= 304; // Fix when stage 5 is finished/checkpoint can be reached
+						yPos <= 220;
+					end
+
+					gravity <= DOWN;
+				end
+
+				if (lvl2_To_lvl3_col) begin
+					stage <= LVL3;
+
+					xPos <= 464;
+					yPos <= 61;
+					gravity <= DOWN;
+				end
+				else if (lvl2_To_lvl8_col) begin
+					stage <= LVL8;
+
+					xPos <= 704;
+					yPos <= 489;
+					gravity <= UP;
+				end
+				else if (lvl2_To_lvl1_col) begin
+					stage <= LVL1;
+
+					xPos <= 758;
+					yPos <= 260;
+					gravity <= DOWN;
+				end
+				else if (lvl2_To_lvl7_col) begin
+					stage <= LVL7;
+
+					xPos <= 170;
+					yPos <= 355;
+					gravity <= DOWN;
+				end
 			end
 			else if (stage == LVL3) begin
+				// In this level, the player has no platforms to flip gravity on
+				if (gravity == DOWN)
+					yPos <= yPos + 2;
+				else
+					yPos <= yPos - 2;
 
+				// if(gravity == DOWN && ~lvl3_col_down) begin
+				// 	yPos <= yPos + 2; // go down
+				// end
+				// else if (gravity == DOWN && up) begin
+				// 	gravity <= UP;
+				// end
+
+				// if (gravity == UP && ~lvl3_col_up) begin
+				// 	yPos <= yPos - 2; // go up
+				// end
+				// else if (gravity == UP && up) begin
+				// 	gravity <= DOWN;
+				// end
+
+				if (right && left) begin
+					xPos <= xPos;
+				end
+				else if (right && ~lvl3_col_right) begin
+					xPos <= xPos + 2; // go right
+				end
+				else if (left && ~lvl3_col_left) begin
+					xPos <= xPos - 2; // go left
+				end
+
+				if (lvl3Lava_col) begin
+					if (~checkpointFlag) begin // Haven't reached the checkpoint
+						stage <= LVL1;
+
+						xPos <= 304;
+						yPos <= 220;
+					end
+					else begin // Reached the checkpoint
+						stage <= LVL5;
+
+						xPos <= 304; // Fix when stage 5 is finished/checkpoint can be reached
+						yPos <= 220;
+					end
+
+					gravity <= DOWN;
+				end
+
+				if (lvl3_To_lvl4_col) begin
+					stage <= LVL4;
+
+					xPos <= 464;
+					yPos <= 61;
+					gravity <= DOWN;
+				end
+				else if (lvl3_To_lvl2_col) begin
+					stage <= LVL2;
+
+					xPos <= 464;
+					yPos <= 489;
+					gravity <= UP;
+				end
 			end
 			else if (stage == LVL4) begin
+				if(gravity == DOWN && ~lvl4_col_down) begin
+					yPos <= yPos + 2; // go down
+				end
+				else if (gravity == DOWN && up) begin
+					gravity <= UP;
+				end
 
+				if (gravity == UP && ~lvl4_col_up) begin
+					yPos <= yPos - 2; // go up
+				end
+				else if (gravity == UP && up) begin
+					gravity <= DOWN;
+				end
+
+				if (right && left) begin
+					xPos <= xPos;
+				end
+				else if (right && ~lvl4_col_right) begin
+					xPos <= xPos + 2; // go right
+				end
+				else if (left && ~lvl4_col_left) begin
+					xPos <= xPos - 2; // go left
+				end
+
+				if (lvl4Lava_col) begin
+					if (~checkpointFlag) begin // Haven't reached the checkpoint
+						stage <= LVL1;
+
+						xPos <= 304;
+						yPos <= 220;
+					end
+					else begin // Reached the checkpoint
+						stage <= LVL5;
+
+						xPos <= 304; // Fix when stage 5 is finished/checkpoint can be reached
+						yPos <= 220;
+					end
+
+					gravity <= DOWN;
+				end
+
+				if (lvl4_To_lvl5_col) begin
+					stage <= LVL5;
+
+					xPos <= 170;
+					yPos <= 441;
+					gravity <= DOWN;
+				end
+				else if (lvl4_To_lvl3_col) begin
+					stage <= LVL3;
+
+					xPos <= 424;
+					yPos <= 489;
+					gravity <= UP;
+				end
 			end
 			else if (stage == LVL5) begin
 
@@ -754,15 +1061,6 @@ module block_controller(
 					gravity <= DOWN;
 				end
 			end
-		    
-		    // else if(gravity==1 && yPos>=382 && yPos<444 && xPos>405 && xPos<565)begin
-			// 	yPos<=yPos+1;
-			// // slow death, only possible because of falling
-			// end
-		    // 	else if(gravity==1 && yPos==444 && xPos>405 && xPos<565)begin
-			// 	xPos<=304;
-			// 	yPos<=220; // reset because of death, only possible because of falling
-			// end
 		end
 	end
 
